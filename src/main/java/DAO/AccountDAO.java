@@ -9,18 +9,19 @@ import java.sql.Statement;
 import Model.Account;
 import Util.ConnectionUtil;
 
-/*  
-    Handles Account related-database queries
-
-    account_id int primary key auto_increment,
-    username varchar(255) unique,
-    password varchar(255)
-    
-*/
+/**
+ * Handles Account related-database queries
+ * 
+ * account_id int primary key auto_increment,
+ * username varchar(255) unique,
+ * password varchar(255)
+ * 
+ */
 public class AccountDAO {
 
     /**
      * TODO: process new User registrations
+     * 
      * @param account - an object modelling an Account
      * @return account object
      */
@@ -48,4 +49,31 @@ public class AccountDAO {
         return null;
     }
 
+    /**
+     * Retrieve a certain account by username
+     * 
+     * @param username
+     * @return true if username exists, false otherwise
+     */
+    public boolean usernameExists(String username) {
+        Connection conn = ConnectionUtil.getConnection();
+        try {
+            String sql = "SELECT COUNT(*) FROM account WHERE username = ?;";
+
+            PreparedStatement preparedStatement = conn.prepareStatement(sql);
+
+            preparedStatement.setString(1, username);
+
+            ResultSet rs = preparedStatement.executeQuery();
+
+            if (rs.next()) {
+                int count = rs.getInt(1);
+                return count > 0;
+            }
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+        }
+
+        return false;
+    }
 }
