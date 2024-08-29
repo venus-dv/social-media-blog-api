@@ -11,17 +11,10 @@ import Util.ConnectionUtil;
 
 /**
  * Handles Account related-database queries
- * 
- * account_id int primary key auto_increment,
- * username varchar(255) unique,
- * password varchar(255)
- * 
  */
 public class AccountDAO {
 
     /**
-     * TODO: process new User registrations
-     * 
      * @param account - an object modelling an Account
      * @return account object
      */
@@ -33,8 +26,8 @@ public class AccountDAO {
             String sql = "INSERT INTO account (username, password) VALUES (?, ?);";
             PreparedStatement preparedStatement = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
 
-            preparedStatement.setString(1, account.username);
-            preparedStatement.setString(2, account.password);
+            preparedStatement.setString(1, account.getUsername());
+            preparedStatement.setString(2, account.getPassword());
 
             preparedStatement.executeUpdate();
             ResultSet pKeyResultSet = preparedStatement.getGeneratedKeys();
@@ -52,7 +45,7 @@ public class AccountDAO {
     /**
      * Retrieve a certain account by username
      * 
-     * @param username
+     * @param username - account username to check for
      * @return true if username exists, false otherwise
      */
     public boolean usernameExists(String username) {
@@ -71,9 +64,69 @@ public class AccountDAO {
                 return count > 0;
             }
         } catch (SQLException e) {
-            System.out.println(e.getMessage());
+            System.out.println("Error checking credentials: " + e.getMessage());
         }
 
         return false;
+    }
+
+    /**
+     * Retrieves a certain account
+     * 
+     * @param account - an object modelling an account
+     * @return account object
+     */
+    public Account getAccount(Account account) {
+        // db connection
+        Connection conn = ConnectionUtil.getConnection();
+        try {
+            // SQL logic
+            String sql = "SELECT * FROM account WHERE username = ?;";
+            PreparedStatement preparedStatement = conn.prepareStatement(sql);
+
+            preparedStatement.setString(1, account.getUsername());
+
+            // debug statement
+            //System.out.println("\n\n Account: " + account.getUsername() + ", " + account.getPassword() +"\n\n");
+
+            ResultSet rs = preparedStatement.executeQuery();
+            while (rs.next()) {
+                Account acct = new Account(rs.getInt("account_id"), rs.getString("username"), 
+                rs.getString("password"));
+                return acct;
+            }
+
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+        }
+        return null;
+    }
+
+    /**
+     * Retrieves a certain account
+     * 
+     * @param account - an object modelling an account
+     * @return account object
+     */
+    public String getPassword(String password, Account account) {
+        // db connection
+        Connection conn = ConnectionUtil.getConnection();
+        try {
+            // SQL logic
+            String sql = "SELECT password FROM account WHERE username = ?;";
+            PreparedStatement preparedStatement = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+
+            preparedStatement.setString(1, account.getUsername());
+
+            ResultSet rs = preparedStatement.executeQuery();
+
+            if (rs.next()) {
+                return rs.getString("password");
+            }
+
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+        }
+        return null;
     }
 }
