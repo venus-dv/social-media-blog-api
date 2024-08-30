@@ -5,7 +5,10 @@ import Model.Message;
 import Service.AccountService;
 import Service.MessageService;
 
+import java.util.List;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.javalin.Javalin;
 import io.javalin.http.Context;
@@ -35,6 +38,8 @@ public class SocialMediaController {
         app.get("/messages", this::getAllMessagesHandler);
         app.get("/messages/{message_id}", this::getMessageByIdHandler);
         app.delete("/messages/{message_id}", this::deleteMessageByIdHandler);
+        app.patch("/messages/{message_id}", this::updateMessageTextHandler);
+        app.get("/accounts/{account_id}/messages", this::getMessagesByAccountIdHandler);
 
         return app;
     }
@@ -112,14 +117,17 @@ public class SocialMediaController {
 
     /**
      * Handler to retrieve all messages
-     * @param ctx - the context object handles information HTTP requests and generates responses within Javalin.
+     * 
+     * @param ctx - the context object handles information HTTP requests and
+     *            generates responses within Javalin.
      */
     private void getAllMessagesHandler(Context ctx) {
         ctx.json(messageService.getAllMessages());
     }
 
     /**
-     * @param ctx - the context object handles information HTTP requests and generates responses within Javalin.
+     * @param ctx - the context object handles information HTTP requests and
+     *            generates responses within Javalin.
      */
     private void getMessageByIdHandler(Context ctx) {
         int messageId = Integer.parseInt(ctx.pathParam("message_id"));
@@ -127,7 +135,7 @@ public class SocialMediaController {
 
         if (message != null) {
             ctx.json(message);
-            
+
         } else {
             ctx.json("");
         }
@@ -136,17 +144,66 @@ public class SocialMediaController {
 
     /**
      * 
-     * @param ctx - the context object handles information HTTP requests and generates responses within Javalin.
+     * @param ctx - the context object handles information HTTP requests and
+     *            generates responses within Javalin.
      */
     private void deleteMessageByIdHandler(Context ctx) {
         int messageId = Integer.parseInt(ctx.pathParam("message_id"));
         Message deletedMessage = messageService.deleteMessageById(messageId);
-    
+
         if (deletedMessage != null) {
             ctx.json(deletedMessage);
         } else {
             ctx.json("");
         }
+        ctx.status(200);
+    }
+
+    /**
+     * 
+     * @param ctx - the context object handles information HTTP requests and
+     *            generates responses within Javalin.
+     */
+    private void updateMessageTextHandler(Context ctx) {
+        int messageId = Integer.parseInt(ctx.pathParam("message_id"));
+        String requestBody = ctx.body();
+
+        ObjectMapper mapper = new ObjectMapper();
+        JsonNode jsonNode;
+        try {
+            jsonNode = mapper.readTree(requestBody);
+        } catch (JsonProcessingException e) {
+            ctx.status(400).result("");
+            return;
+        }
+
+        String newMessageText = jsonNode.path("message_text").asText();
+
+        if (newMessageText == null || newMessageText.isBlank() || newMessageText.length() > 255) {
+            ctx.status(400).result("");
+            return;
+        }
+
+        // Proceed with updating the message
+        Message updatedMessage = messageService.updateMessageText(messageId, newMessageText);
+
+        if (updatedMessage != null) {
+            ctx.json(updatedMessage);
+        } else {
+            ctx.status(400).result("");
+        }
+    }
+
+    /**
+     * 
+     * @param ctx - the context object handles information HTTP requests and
+     *            generates responses within Javalin.
+     */
+    private void getMessagesByAccountIdHandler(Context ctx) {
+        int userId = Integer.parseInt(ctx.pathParam("account_id"));
+        List<Message> messages = messageService.getMessagesByAccountId(userId);
+
+        ctx.json(messages);
         ctx.status(200);
     }
 }

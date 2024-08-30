@@ -80,4 +80,23 @@ public class MessageService {
     public Message deleteMessageById(int messageId) {
         return messageDAO.deleteMessageById(messageId);
     }
+
+    /**
+     * 
+     * @param messageId      - id of a particular message
+     * @param newMessageText - new message to replace old
+     * @return message
+     */
+    public Message updateMessageText(int messageId, String newMessageText) {
+        return messageDAO.updateMessageText(messageId, newMessageText);
+    }
+
+    /**
+     * 
+     * @param accountId - account id of user
+     * @return list of messages from particular user
+     */
+    public List<Message> getMessagesByAccountId(int accountId) {
+        return messageDAO.getMessagesByAccountId(accountId);
+    }
 }

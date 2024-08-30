@@ -117,7 +117,7 @@ public class MessageDAO {
 
             if (rs.next()) {
                 message = new Message(rs.getInt("message_id"), rs.getInt("posted_by"),
-                rs.getString("message_text"), rs.getLong("time_posted_epoch"));
+                        rs.getString("message_text"), rs.getLong("time_posted_epoch"));
             }
 
             // Delete the message if it exists
@@ -131,5 +131,73 @@ public class MessageDAO {
             System.out.println(e.getMessage());
         }
         return message;
+    }
+
+    /**
+     * 
+     * @param messageId      - id of a particular message
+     * @param newMessageText - new message to replace old one
+     * @return message
+     */
+    public Message updateMessageText(int messageId, String newMessageText) {
+        Message message = null;
+        Connection conn = ConnectionUtil.getConnection();
+        try {
+            String sql = "SELECT * FROM message WHERE message_id = ?;";
+            PreparedStatement selectStatement = conn.prepareStatement(sql);
+            selectStatement.setInt(1, messageId);
+            ResultSet rs = selectStatement.executeQuery();
+
+            if (rs.next()) {
+                // Update the message_text if it is valid
+                if (newMessageText != null && !newMessageText.isBlank() && newMessageText.length() <= 255) {
+                    String updateSql = "UPDATE message SET message_text = ? WHERE message_id = ?;";
+                    PreparedStatement updateStatement = conn.prepareStatement(updateSql);
+                    updateStatement.setString(1, newMessageText);
+                    updateStatement.setInt(2, messageId);
+                    updateStatement.executeUpdate();
+
+                    // Retrieve the updated message
+                    String getUpdatedMessageSql = "SELECT * FROM message WHERE message_id = ?;";
+                    PreparedStatement getUpdatedMessageStatement = conn.prepareStatement(getUpdatedMessageSql);
+                    getUpdatedMessageStatement.setInt(1, messageId);
+                    ResultSet updatedRs = getUpdatedMessageStatement.executeQuery();
+
+                    if (updatedRs.next()) {
+                        message = new Message(rs.getInt("message_id"), rs.getInt("posted_by"),
+                                rs.getString("message_text"), rs.getLong("time_posted_epoch"));
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+        }
+        return message;
+    }
+
+    /**
+     * 
+     * @param accountId - the account id of user
+     * @return list of messages from particular account
+     */
+    public List<Message> getMessagesByAccountId(int accountId) {
+        List<Message> messages = new ArrayList<>();
+        Connection conn = ConnectionUtil.getConnection();
+        try {
+            String sql = "SELECT * FROM message WHERE posted_by = ?;";
+            PreparedStatement preparedStatement = conn.prepareStatement(sql);
+            preparedStatement.setInt(1, accountId);
+
+            ResultSet rs = preparedStatement.executeQuery();
+
+            while (rs.next()) {
+                Message message = new Message(rs.getInt("message_id"), rs.getInt("posted_by"),
+                        rs.getString("message_text"), rs.getLong("time_posted_epoch"));
+                messages.add(message);
+            }
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+        }
+        return messages;
     }
 }
