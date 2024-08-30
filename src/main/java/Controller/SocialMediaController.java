@@ -29,6 +29,7 @@ public class SocialMediaController {
         Javalin app = Javalin.create();
         app.post("/register", this::postRegisterUserHandler);
         app.post("/login", this::postUserLoginHandler);
+        app.post("/messages", this::postCreateMessageHandler));
 
         return app;
     }
@@ -60,7 +61,7 @@ public class SocialMediaController {
     }
 
     /**
-     * Handles user logins
+     * Handles user login
      * 
      * @param ctx - the context object handles information HTTP requests and
      *            generates responses within Javalin
@@ -79,6 +80,28 @@ public class SocialMediaController {
 
         } catch (IllegalArgumentException e) {
             ctx.status(401).result(e.getMessage());
+        }
+    }
+
+    /**
+     * Handles creating a new message
+     * 
+     * @param ctx - the context object handles information HTTP requests and 
+     *              generates responses within Javalin
+     * @throws JsonProcessingException - will be thrown if there is an issue
+     *                                   converting JSON into an object
+     */
+    private void postCreateMessageHandler(Context ctx) throws JsonProcessingException {
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            Message message = mapper.readValue(ctx.body(), Message.class);
+
+            Message newMessage = MessageService.addMessage(message);
+
+            ctx.json(mapper.writeValueAsString(newMessage));
+            ctx.status(200);
+        } catch (IllegalArgumentException e) {
+            ctx.status(400).result(e.getMessage());
         }
     }
 }
