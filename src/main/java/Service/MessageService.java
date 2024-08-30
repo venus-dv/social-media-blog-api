@@ -2,6 +2,9 @@ package Service;
 
 import Model.Account;
 import Model.Message;
+
+import java.util.List;
+
 import DAO.AccountDAO;
 import DAO.MessageDAO;
 
@@ -10,12 +13,14 @@ import DAO.MessageDAO;
  */
 public class MessageService {
     MessageDAO messageDAO;
+    AccountDAO accountDAO;
 
     /**
-     * No-args constructor, messageService instantiates a plain messageDAO.
+     * No-args constructor
      */
     public MessageService() {
         messageDAO = new MessageDAO();
+        accountDAO = new AccountDAO();
     }
 
     /**
@@ -24,8 +29,9 @@ public class MessageService {
      * 
      * @param messageDAO
      */
-    public MessageService(MessageDAO messageDAO) {
+    public MessageService(MessageDAO messageDAO, AccountDAO accountDAO) {
         this.messageDAO = messageDAO;
+        this.accountDAO = accountDAO;
     }
 
     /**
@@ -36,39 +42,25 @@ public class MessageService {
      *         the message_id
      */
     public Message addMessage(Message message) {
-        if (message.getMessage_text() == null || message.getMessage_text().trim().isEmpty()) {
+        if (message.getMessage_text() == null || message.getMessage_text().trim().isEmpty()
+                || message.getMessage_text().length() > 255) {
             throw new IllegalArgumentException("");
         }
 
-        String regex = "^.{0,255}$";
-        boolean messageLength = message.getMessage_text().matches(regex);
-        if (!messageLength) {
+        Account user = accountDAO.getAccountByID(message.getPosted_by());
+        if (user == null) {
             throw new IllegalArgumentException("");
         }
 
-        int posted_by = message.getPosted_by();
-        Account account = accountDAO.getAccountByID(message.getPosted_by());
+        Message newMessage = messageDAO.insertMessage(message);
 
-        if (posted_by != Account.getAccountByID(message.getPosted_by()) ) {
-            throw new IllegalArgumentException("");
-        }
+        return newMessage;
+    }
 
-        if (message.getMessage_text() != null && !message.getMessage_text().trim().isEmpty()) {
-            
-            if (messageLength) {
-                if (!messageDAO.usernameExists(message.getUsername())) {
-                    Message newMessage = messageDAO.insertMessage(message);
-
-                    return newMessage;
-                } else {
-                    throw new IllegalArgumentException("");
-                }
-            } else {
-                throw new IllegalArgumentException("");
-            }
-
-        } else {
-            throw new IllegalArgumentException("");
-        }
+    /**
+     * @return all messages in the database
+     */
+    public List<Message> getAllMessages() {
+        return messageDAO.getAllMessages();
     }
 }

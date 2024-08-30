@@ -12,9 +12,11 @@ import io.javalin.http.Context;
 
 public class SocialMediaController {
     AccountService accountService;
+    MessageService messageService;
 
     public SocialMediaController() {
         accountService = new AccountService();
+        messageService = new MessageService();
     }
 
     /**
@@ -29,7 +31,8 @@ public class SocialMediaController {
         Javalin app = Javalin.create();
         app.post("/register", this::postRegisterUserHandler);
         app.post("/login", this::postUserLoginHandler);
-        app.post("/messages", this::postCreateMessageHandler));
+        app.post("/messages", this::postCreateMessageHandler);
+        app.get("/messages", this::getAllMessagesHandler);
 
         return app;
     }
@@ -86,22 +89,30 @@ public class SocialMediaController {
     /**
      * Handles creating a new message
      * 
-     * @param ctx - the context object handles information HTTP requests and 
-     *              generates responses within Javalin
+     * @param ctx - the context object handles information HTTP requests and
+     *            generates responses within Javalin
      * @throws JsonProcessingException - will be thrown if there is an issue
-     *                                   converting JSON into an object
+     *                                 converting JSON into an object
      */
     private void postCreateMessageHandler(Context ctx) throws JsonProcessingException {
         try {
             ObjectMapper mapper = new ObjectMapper();
             Message message = mapper.readValue(ctx.body(), Message.class);
 
-            Message newMessage = MessageService.addMessage(message);
+            Message newMessage = messageService.addMessage(message);
 
             ctx.json(mapper.writeValueAsString(newMessage));
             ctx.status(200);
         } catch (IllegalArgumentException e) {
             ctx.status(400).result(e.getMessage());
         }
+    }
+
+    /**
+     * Handler to retrieve all messages
+     * @param ctx - the context object handles information HTTP requests and generates responses within Javalin.
+     */
+    private void getAllMessagesHandler(Context ctx) {
+        ctx.json(messageService.getAllMessages());
     }
 }
