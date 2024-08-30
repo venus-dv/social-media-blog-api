@@ -34,6 +34,7 @@ public class SocialMediaController {
         app.post("/messages", this::postCreateMessageHandler);
         app.get("/messages", this::getAllMessagesHandler);
         app.get("/messages/{message_id}", this::getMessageByIdHandler);
+        app.delete("/messages/{message_id}", this::deleteMessageByIdHandler);
 
         return app;
     }
@@ -126,9 +127,26 @@ public class SocialMediaController {
 
         if (message != null) {
             ctx.json(message);
-            ctx.status(200);
+            
         } else {
             ctx.json("");
         }
+        ctx.status(200);
+    }
+
+    /**
+     * 
+     * @param ctx - the context object handles information HTTP requests and generates responses within Javalin.
+     */
+    private void deleteMessageByIdHandler(Context ctx) {
+        int messageId = Integer.parseInt(ctx.pathParam("message_id"));
+        Message deletedMessage = messageService.deleteMessageById(messageId);
+    
+        if (deletedMessage != null) {
+            ctx.json(deletedMessage);
+        } else {
+            ctx.json("");
+        }
+        ctx.status(200);
     }
 }
