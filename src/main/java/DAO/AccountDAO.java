@@ -64,7 +64,7 @@ public class AccountDAO {
                 return count > 0;
             }
         } catch (SQLException e) {
-            System.out.println("Error checking credentials: " + e.getMessage());
+            System.out.println(e.getMessage());
         }
 
         return false;
