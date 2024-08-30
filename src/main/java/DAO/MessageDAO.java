@@ -8,7 +8,6 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
-import Model.Account;
 import Model.Message;
 import Util.ConnectionUtil;
 
@@ -164,8 +163,8 @@ public class MessageDAO {
                     ResultSet updatedRs = getUpdatedMessageStatement.executeQuery();
 
                     if (updatedRs.next()) {
-                        message = new Message(rs.getInt("message_id"), rs.getInt("posted_by"),
-                                rs.getString("message_text"), rs.getLong("time_posted_epoch"));
+                        message = new Message(updatedRs.getInt("message_id"), updatedRs.getInt("posted_by"),
+                                updatedRs.getString("message_text"), updatedRs.getLong("time_posted_epoch"));
                     }
                 }
             }
