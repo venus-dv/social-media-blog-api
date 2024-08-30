@@ -23,8 +23,10 @@ public class RetrieveMessageByMessageIdTest {
     Javalin app;
 
     /**
-     * Before every test, reset the database, restart the Javalin app, and create a new webClient and ObjectMapper
+     * Before every test, reset the database, restart the Javalin app, and create a
+     * new webClient and ObjectMapper
      * for interacting locally on the web.
+     * 
      * @throws InterruptedException
      */
     @Before
@@ -43,13 +45,12 @@ public class RetrieveMessageByMessageIdTest {
         app.stop();
     }
 
-
     /**
-     * Sending an http request to GET localhost:8080/messages/1 
+     * Sending an http request to GET localhost:8080/messages/1
      * 
      * Expected Response:
-     *  Status Code: 200
-     *  Response Body: JSON represenation of a message object
+     * Status Code: 200
+     * Response Body: JSON represenation of a message object
      */
     @Test
     public void getMessageGivenMessageIdMessageFound() throws IOException, InterruptedException {
@@ -66,13 +67,13 @@ public class RetrieveMessageByMessageIdTest {
         Assert.assertEquals(expectedResult, actualResult);
     }
 
-
     /**
-     * Sending an http request to GET localhost:8080/messages/100 (message id 100 does not exist)
+     * Sending an http request to GET localhost:8080/messages/100 (message id 100
+     * does not exist)
      * 
      * Expected Response:
-     *  Status Code: 200
-     *  Response Body: 
+     * Status Code: 200
+     * Response Body:
      */
     @Test
     public void getMessageGivenMessageIdMessageNotFound() throws IOException, InterruptedException {
@@ -85,6 +86,5 @@ public class RetrieveMessageByMessageIdTest {
         Assert.assertEquals(200, status);
         Assert.assertTrue(response.body().toString().isEmpty());
     }
-
 
 }
